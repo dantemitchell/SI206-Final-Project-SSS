@@ -4,64 +4,109 @@ import requests
 
 
 url1 = "https://www.worldfootball.net/schedule/eng-premier-league-2022-2023-spieltag/38/"
+bgcolor_list = ['#AFD179', '#D6EAB6', '#E8F5D3', '#FFFFFF', '#A5CCE9']
 
 def get_22_23_away_records(url1, bgcolors):
     # Get name of each player and the number of home goals and away goals, seperately.
     # FIRST PAGE
     away_url = f"{url1}auswaerts/"
     r1 = requests.get(away_url)
-    soup = BeautifulSoup(r1.content, 'html.parser')
+    soup_away = BeautifulSoup(r1.content, 'html.parser')
 
-    team_names = []
-    wins_draws_losses = []
+    home_url = f"{url1}heim/"
+    r2 = requests.get(home_url)
+    soup_home = BeautifulSoup(r2.content, 'html.parser')
+
+    away_team_names = []
+    home_team_names = []
+    home_wins_draws_losses = []
+    away_wins_draws_losses = []
     
+    for color in bgcolors:
+        team_data = []
+        current_team = ''
+        team_count = 0
+        
+        td_elements = soup_away.find_all('td', bgcolor=color)
+        for td in td_elements:
+            if td.find('a'):
+                if team_count > 0 and team_data:
+                    away_wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
+                    team_data = []  # Reset team_data for the next team
+                current_team = td.get_text(strip=True)
+                away_team_names.append(current_team)
+                team_count += 1
+            else:
+                if current_team and td.text.isdigit():
+                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+        if team_data:
+            away_wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))
+
 
     for color in bgcolors:
         team_data = []
         current_team = ''
         team_count = 0
-        print(color)
-        td_elements = soup.find_all('td', bgcolor=color)
+        
+        td_elements = soup_home.find_all('td', bgcolor=color)
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
+                    home_wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
                     team_data = []  # Reset team_data for the next team
                 current_team = td.get_text(strip=True)
-                team_names.append(current_team)
+                home_team_names.append(current_team)
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
                     team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
-
         if team_data:
-            wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))
-
-    return team_names, wins_draws_losses
-
-bgcolor_list = ['#AFD179', '#CCCCCC', '#FFA500', '#90EE90', '#FFC0CB']
+            home_wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))
+    return away_team_names, away_wins_draws_losses, home_team_names, home_wins_draws_losses
 
 # Call the function with the soup and bgcolor list
-# print(get_22_23_away_records(url1, bgcolor_list))
-team_names, wins_and_losses = get_22_23_away_records(url1, bgcolor_list)
-print(team_names, wins_and_losses)
+away_team_names, away_wins_and_losses, home_team_names, home_wins_draws_losses = get_22_23_away_records(url1, bgcolor_list)
+print(away_team_names, away_wins_and_losses)
+print(home_team_names, home_wins_draws_losses)
 
-    # for td in soup.find_all('td', bgcolor='#AFD179'):
-    #     if td.find('a'):
-    #         # If 'a' tag found, it's a team name
-    #         if team_data:
-    #             # If there's existing data, append to records_list
-    #             wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-    #             team_data = []  # Reset team_data for the next team
-    #         current_team = td.get_text(strip=True)
-    #         team_names.append(current_team)
-    #     else:
-    #         # Extract 2nd and 4th numbers if it's a numeric value
-    #         if current_team and td.text.isdigit():
-    #             team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
-    # # Append the last team's data if any
-    # if team_data:
-    #     wins_draws_losses.append((team_data[1], team_data[2], team_data[3])) 
+
+
+# def get_22_23_home_records(url1, bgcolors):
+#     # Get name of each player and the number of home goals and away goals, seperately.
+#     # FIRST PAGE
+#     home_url = f"{url1}heim/"
+#     r2 = requests.get(home_url)
+#     soup = BeautifulSoup(r2.content, 'html.parser')
+
+#     team_names = []
+#     wins_draws_losses = []
+    
+#     for color in bgcolors:
+#         team_data = []
+#         current_team = ''
+#         team_count = 0
+#         print(color)
+#         td_elements = soup.find_all('td', bgcolor=color)
+#         for td in td_elements:
+#             if td.find('a'):
+#                 if team_count > 0 and team_data:
+#                     wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
+#                     team_data = []  # Reset team_data for the next team
+#                 current_team = td.get_text(strip=True)
+#                 team_names.append(current_team)
+#                 team_count += 1
+#             else:
+#                 if current_team and td.text.isdigit():
+#                     team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+#         if team_data:
+#             wins_draws_losses.append((team_data[1], team_data[2], team_data[3]))
+#     return team_names, wins_draws_losses
+
+# bgcolor_list = ['#AFD179', '#D6EAB6', '#E8F5D3', '#FFFFFF', '#A5CCE9']
+# # Call the function with the soup and bgcolor list
+# team_names, wins_and_losses = get_22_23_away_records(url1, bgcolor_list)
+# print(team_names, wins_and_losses)
+
 
 
     # # ateams2 = soup.find_all('td', bgcolor='#D6EAB6')
