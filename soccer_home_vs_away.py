@@ -34,7 +34,7 @@ def get_22_23_records(url1, bgcolors):
                     away_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
                     team_data = []  # Reset team_data for the next team
                 current_team = td.get_text(strip=True)
-                away_team_names23.append(current_team)
+                away_team_names23.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
@@ -52,7 +52,7 @@ def get_22_23_records(url1, bgcolors):
                     home_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
                     team_data = []  # Reset team_data for the next team
                 current_team = td.get_text(strip=True)
-                home_team_names23.append(current_team)
+                home_team_names23.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
@@ -305,3 +305,39 @@ def get_18_19_records(url3, bgcolors):
 away_team_names19, away_wins_and_losses19, home_team_names19, home_wins_draws_losses19 = get_18_19_records(url5, bgcolor_list)
 print(away_team_names19, away_wins_and_losses19)
 print(home_team_names19, home_wins_draws_losses19)
+
+conn = sqlite3.connect('football_records_combined.db')
+c = conn.cursor()
+
+c.execute('''
+    CREATE TABLE IF NOT EXISTS football_records (
+        id INTEGER PRIMARY KEY,
+        team_name TEXT,
+        home_wins INTEGER,
+        home_draws INTEGER,
+        home_losses INTEGER,
+        away_wins INTEGER,
+        away_draws INTEGER,
+        away_losses INTEGER
+    )
+''')
+
+def insert_data_into_combined_table(home_teams, home_results, away_teams, away_results):
+    for i in range(len(home_teams)):
+        team_name = home_teams[i]
+        home_wins, home_draws, home_losses = home_results[i]
+        away_wins, away_draws, away_losses = away_results[i]
+        c.execute('''
+            INSERT INTO football_records (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses))
+
+# Insert data for each season into the combined table
+insert_data_into_combined_table(home_team_names23, home_wins_draws_losses23, away_team_names23, away_wins_and_losses23)
+insert_data_into_combined_table(home_team_names22, home_wins_draws_losses22, away_team_names22, away_wins_and_losses22)
+insert_data_into_combined_table(home_team_names21, home_wins_draws_losses21, away_team_names21, away_wins_and_losses21)
+insert_data_into_combined_table(home_team_names20, home_wins_draws_losses20, away_team_names20, away_wins_and_losses20)
+insert_data_into_combined_table(home_team_names19, home_wins_draws_losses19, away_team_names19, away_wins_and_losses19)
+
+conn.commit()
+conn.close()
