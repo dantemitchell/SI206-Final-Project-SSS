@@ -11,15 +11,28 @@ def buildTeamList():
     teamLst = []
     for team in teamjson:
         if team['sport']['name'] == "Major League Baseball":
-            teamLst.append(team['shortName'])
-            print(team['shortName'])
-    print(len(teamLst))
-    #teamDict = teamjson
-    #mlbDict = [team for team in teamDict if (team['teams'][0]['sport']['name']) == "Major League Baseball"]
-    #team = statsapi.lookup_team('det')
-    #print(team[0]['id'])
 
-def buildRosterDatabases():
+            teamLst.append((team['shortName'], team['id']))
+            print(team['shortName'], team['id'])
+    return teamLst
+
+def buildStatList():
+    boxCat = list(statsapi.boxscore_data(statsapi.last_game(140))['homeBatters'][0].values())
+    newBoxCat = ["team name", "team id"]
+    for item in boxCat:
+        if type(item) == str:
+            if item.isupper():
+                newBoxCat.append(item)
+    pitchCat = list(statsapi.boxscore_data(statsapi.last_game(140))['homePitchers'][0].values())
+    newPitchCat = []
+    for item in pitchCat:
+        if type(item) == str:
+            if item.isupper():
+                newStr = f'p{item}'
+                newPitchCat.append(item)
+    return newBoxCat, newPitchCat
+
+def buildHomeAndAwayDatabases():
     pass
 
 def processBoxScore():
@@ -28,6 +41,6 @@ def processBoxScore():
 
 
 def main():
-    buildTeamList()
+    buildStatList()
 
 main()
