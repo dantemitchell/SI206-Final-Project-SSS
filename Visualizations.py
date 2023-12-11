@@ -6,15 +6,12 @@ def get_wins_losses_json():
     conn = sqlite3.connect('football_records_combined.db')
     c = conn.cursor()
 
-    # Select home and away wins, home and away losses from the database
     c.execute('SELECT team_name, home_wins, home_losses, away_wins, away_losses FROM football_records')
 
-    # Fetch all rows
     data = c.fetchall()
 
     conn.close()
 
-    # Convert data to JSON string
     json_data = json.dumps(data)
 
     return json_data
@@ -46,7 +43,6 @@ values = list(averages.values())
 
 plt.figure(figsize=(10, 6))
 
-# Creating bar plot
 plt.bar(categories, values, color=['blue', 'orange', 'green', 'red'])
 plt.xlabel('Categories')
 plt.ylabel('Average Values')
@@ -54,7 +50,6 @@ plt.title('Average Home and Away Wins/Losses')
 plt.xticks(rotation=45)
 plt.tight_layout()
 
-# Show plot
 plt.show()
 
 
@@ -67,7 +62,7 @@ plt.show()
 #     away_losses = [loss for _, _, _, _, loss in data]
 
 
-#     # Plotting home wins vs home losses
+#    
 #     plt.figure(figsize=(10, 6))
 #     plt.scatter(home_wins, home_losses, color='blue')
 #     plt.title('Home Wins vs Home Losses')
@@ -80,7 +75,7 @@ plt.show()
 #     plt.grid(True)
 #     plt.show()
 
-#     # Plotting away wins vs away losses
+#   
 #     plt.figure(figsize=(10, 6))
 #     plt.scatter(away_wins, away_losses, color='red')
 #     plt.title('Away Wins vs Away Losses')
@@ -109,7 +104,7 @@ plt.show()
 #     home_losses = [loss for _, _, _, loss, *_ in data]
 #     away_losses = [loss for _, _, _, _, loss in data]
 
-#     # Plotting Home Wins vs Away Wins
+#     
 #     plt.figure(figsize=(12, 8))
 #     plt.scatter(home_wins, away_wins, marker='o', color='blue')
 #     plt.title('Home Wins vs Away Wins')
@@ -138,4 +133,4 @@ plt.show()
 #     plt.show()
 
 
-plot_home_away_stats(json_data)
+# plot_home_away_stats(json_data)
