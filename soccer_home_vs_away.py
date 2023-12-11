@@ -306,23 +306,25 @@ away_team_names19, away_wins_and_losses19, home_team_names19, home_wins_draws_lo
 print(away_team_names19, away_wins_and_losses19)
 print(home_team_names19, home_wins_draws_losses19)
 
-conn = sqlite3.connect('football_records_combined.db')
-c = conn.cursor()
+def create_db():
+    conn = sqlite3.connect('football_records_combined.db')
+    c = conn.cursor()
 
-c.execute('''
-    CREATE TABLE IF NOT EXISTS football_records (
-        id INTEGER PRIMARY KEY,
-        team_name TEXT,
-        home_wins INTEGER,
-        home_draws INTEGER,
-        home_losses INTEGER,
-        away_wins INTEGER,
-        away_draws INTEGER,
-        away_losses INTEGER
-    )
-''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS football_records (
+            id INTEGER PRIMARY KEY,
+            team_name TEXT,
+            home_wins INTEGER,
+            home_draws INTEGER,
+            home_losses INTEGER,
+            away_wins INTEGER,
+            away_draws INTEGER,
+            away_losses INTEGER
+        )
+    ''')
+    return conn, c
 
-def insert_data_into_combined_table(home_teams, home_results, away_teams, away_results):
+def insert_data_into_combined_table(c, home_teams, home_results, away_teams, away_results):
     for i in range(len(home_teams)):
         team_name = home_teams[i]
         home_wins, home_draws, home_losses = home_results[i]
@@ -333,11 +335,39 @@ def insert_data_into_combined_table(home_teams, home_results, away_teams, away_r
         ''', (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses))
 
 # Insert data for each season into the combined table
-insert_data_into_combined_table(home_team_names23, home_wins_draws_losses23, away_team_names23, away_wins_and_losses23)
-insert_data_into_combined_table(home_team_names22, home_wins_draws_losses22, away_team_names22, away_wins_and_losses22)
-insert_data_into_combined_table(home_team_names21, home_wins_draws_losses21, away_team_names21, away_wins_and_losses21)
-insert_data_into_combined_table(home_team_names20, home_wins_draws_losses20, away_team_names20, away_wins_and_losses20)
-insert_data_into_combined_table(home_team_names19, home_wins_draws_losses19, away_team_names19, away_wins_and_losses19)
+def main():
+    
+    url1 = "https://www.worldfootball.net/schedule/eng-premier-league-2022-2023-spieltag/38/"
+    url2 = "https://www.worldfootball.net/schedule/eng-premier-league-2021-2022-spieltag/38/"
+    url3 = "https://www.worldfootball.net/schedule/eng-premier-league-2020-2021-spieltag/38/"
+    url4 = "https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/38/"
+    url5 = "https://www.worldfootball.net/schedule/eng-premier-league-2018-2019-spieltag/38/"
+    bgcolor_list = ['#AFD179', '#D6EAB6', '#E8F5D3', '#FFFFFF', '#A5CCE9']
 
-conn.commit()
-conn.close()
+    # Extracting 18-19 records
+    away_team_names23, away_wins_and_losses23, home_team_names23, home_wins_draws_losses23 = get_22_23_records(url1, bgcolor_list)
+    away_team_names22, away_wins_and_losses22, home_team_names22, home_wins_draws_losses22 = get_21_22_records(url2, bgcolor_list)
+    away_team_names21, away_wins_and_losses21, home_team_names21, home_wins_draws_losses21 = get_20_21_records(url3, bgcolor_list)
+    away_team_names20, away_wins_and_losses20, home_team_names20, home_wins_draws_losses20 = get_19_20_records(url4, bgcolor_list)
+    away_team_names19, away_wins_and_losses19, home_team_names19, home_wins_draws_losses19 = get_18_19_records(url5, bgcolor_list)
+    
+
+    # Create database and cursor
+    conn, c = create_db()
+
+    # Insert 18-19 records into the database
+    insert_data_into_combined_table(c, home_team_names23, home_wins_draws_losses23, away_team_names23, away_wins_and_losses23)
+    insert_data_into_combined_table(c, home_team_names22, home_wins_draws_losses22, away_team_names22, away_wins_and_losses22)
+    insert_data_into_combined_table(c, home_team_names21, home_wins_draws_losses21, away_team_names21, away_wins_and_losses21)
+    insert_data_into_combined_table(c, home_team_names20, home_wins_draws_losses20, away_team_names20, away_wins_and_losses20)
+    insert_data_into_combined_table(c, home_team_names19, home_wins_draws_losses19, away_team_names19, away_wins_and_losses19)
+
+
+    # Commit changes and close connection
+    conn.commit()
+    conn.close()
+
+if __name__ == "__main__":
+    main()
+# conn.commit()
+# conn.close()
