@@ -5,7 +5,7 @@ import os
 
 
 def get_22_23_records(url1, bgcolors):
-    # Get name of each player and the number of home goals and away goals, seperately.
+    
     # FIRST PAGE
     season = "22-23"
     away_url = f"{url1}auswaerts/"
@@ -29,14 +29,14 @@ def get_22_23_records(url1, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    away_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    away_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3])) 
+                    team_data = [] 
                 current_team = td.get_text(strip=True)
                 away_team_names23.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             away_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))
     for color in bgcolors:
@@ -47,20 +47,20 @@ def get_22_23_records(url1, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    home_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    home_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))  
+                    team_data = []  
                 current_team = td.get_text(strip=True)
                 home_team_names23.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             home_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names23, away_wins_draws_losses23, home_team_names23, home_wins_draws_losses23
 
 def get_21_22_records(url2, bgcolors):
-    # Get name of each player and the number of home goals and away goals, seperately.
+    
     # Second PAGE
     season = "21-22"
     away_url = f"{url2}auswaerts/"
@@ -84,14 +84,14 @@ def get_21_22_records(url2, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    away_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    away_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))  
+                    team_data = []  
                 current_team = td.get_text(strip=True)
                 away_team_names22.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True))) 
         if team_data:
             away_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))
     for color in bgcolors:
@@ -102,20 +102,20 @@ def get_21_22_records(url2, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    home_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    home_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3])) 
+                    team_data = [] 
                 current_team = td.get_text(strip=True)
                 home_team_names22.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             home_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names22, away_wins_draws_losses22, home_team_names22, home_wins_draws_losses22
 
 def get_20_21_records(url3, bgcolors):
-    # Get name of each player and the number of home goals and away goals, seperately.
+    
     # THIRD PAGE
     season = "20-21"
     away_url = f"{url3}auswaerts/"
@@ -139,14 +139,14 @@ def get_20_21_records(url3, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    away_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    away_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))  
+                    team_data = []  
                 current_team = td.get_text(strip=True)
                 away_team_names21.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             away_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))
     for color in bgcolors:
@@ -157,21 +157,21 @@ def get_20_21_records(url3, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    home_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    home_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))  
+                    team_data = []  
                 current_team = td.get_text(strip=True)
                 home_team_names21.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True))) 
         if team_data:
             home_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names21, away_wins_draws_losses21, home_team_names21, home_wins_draws_losses21
 
 
 def get_19_20_records(url4, bgcolors):
-    # Get name of each player and the number of home goals and away goals, seperately.
+    
     # FOURTH PAGE
     season = "19-20"
     away_url = f"{url4}auswaerts/"
@@ -195,14 +195,14 @@ def get_19_20_records(url4, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    away_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    away_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3])) 
+                    team_data = []  
                 current_team = td.get_text(strip=True)
                 away_team_names20.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             away_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))
     for color in bgcolors:
@@ -213,20 +213,20 @@ def get_19_20_records(url4, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    home_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    home_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))  
+                    team_data = []  
                 current_team = td.get_text(strip=True)
                 home_team_names20.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             home_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names20, away_wins_draws_losses20, home_team_names20, home_wins_draws_losses20
 
 def get_18_19_records(url5, bgcolors):
-    # Get name of each player and the number of home goals and away goals, seperately.
+    
     # FIFTH PAGE
     season = "18-19"
     away_url = f"{url5}auswaerts/"
@@ -250,14 +250,14 @@ def get_18_19_records(url5, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    away_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    away_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))  
+                    team_data = []  
                 current_team = td.get_text(strip=True)
                 away_team_names19.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             away_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))
     for color in bgcolors:
@@ -268,14 +268,14 @@ def get_18_19_records(url5, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    home_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))  # Append tuple to list
-                    team_data = []  # Reset team_data for the next team
+                    home_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))  
+                    team_data = []  
                 current_team = td.get_text(strip=True)
                 home_team_names19.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  # Append numeric value to team_data
+                    team_data.append(int(td.get_text(strip=True))) 
         if team_data:
             home_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names19, away_wins_draws_losses19, home_team_names19, home_wins_draws_losses19
@@ -327,35 +327,27 @@ def main():
         with open("last_processed_index.txt", "w") as file:
             index = 0
             file.write(str(index))
-        
-        # Find the index of the last processed URL to continue from
+       
     url, get_records_func = urls[index]
    
-    # Process the data for the current URL
     away_team_names, away_wins_and_losses, home_team_names, home_wins_draws_losses = get_records_func(url, bgcolor_list)
 
     conn, c = create_db()
 
-    # Process 20 lines of data
     chunk_home_teams = home_team_names[:20]
     chunk_home_results = home_wins_draws_losses[:20]
     chunk_away_teams = away_team_names[:20]
     chunk_away_results = away_wins_and_losses[:20]
 
-    # Insert the chunk of data into the database
     insert_data_into_combined_table(c, chunk_home_teams, chunk_home_results, chunk_away_teams, chunk_away_results)
-
-    # Commit changes and close connection
+    
     conn.commit()
     conn.close()
 
-    # Increment index for the next run
     index = (index + 1) % len(urls)
 
-    # Update the index file for the next run
     with open("last_processed_index.txt", "w") as file:
         file.write(str(index))
-
 
 if __name__ == "__main__":
     main()
