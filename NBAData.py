@@ -42,7 +42,7 @@ def count_team_wins_losses(data, team_id):
                 home_wins += 1
             if home_score < visitor_score:
                 home_losses += 1
-    finalDict = {'Home Wins':home_wins, 'Home Losses':home_losses, 'Away Wins':away_wins, 'Away Losses':away_losses}
+    finalDict = {'team_id':team_id,'Home Wins':home_wins, 'Home Losses':home_losses, 'Away Wins':away_wins, 'Away Losses':away_losses}
     return finalDict
 
 def set_up_database(db):
@@ -70,8 +70,8 @@ def set_up_team_table(cur, conn):
                             "Phoenix Suns", "Portland Trail Blazers", "Sacramento Kings", "San Antonio Spurs",
                             "Toronto Raptors", "Utah Jazz", "Washington Wizards"]:
             teamList.append((team['id'], team['name']))
-    print(teamList)
-    print(len(teamList))
+    #print(teamList)
+    #print(len(teamList))
 
     cur.execute('''CREATE TABLE IF NOT EXISTS teams (
                         team_id INT PRIMARY KEY,
@@ -84,16 +84,37 @@ def set_up_team_table(cur, conn):
     conn.commit()
     conn.close()
 
+def set_up_record_table(data, cur, conn):
+    cur.execute('''CREATE TABLE IF NOT EXISTS team_records (
+                    team_id INT PRIMARY KEY,
+                    home_wins INT,
+                    home_losses INT,
+                    away_wins INT,
+                    away_losses INT
+                   )''')
+    insert_stmt = 'INSERT OR IGNORE INTO team_records (team_id, home_wins, home_losses, away_wins, away_losses) VALUES (?, ?, ?, ?, ?)'
+    for record in data:
+        values = (record['team_id'], record['Home Wins'], record['Home Losses'], record['Away Wins'], record['Away Losses'])
+        cur.execute(insert_stmt, values)
+    conn.commit()
+
+
 
 def main():
     api_key = "efc6e04bccmsh098566e98580557p1c5882jsn2d733f042025"
     url = "https://api-nba-v1.p.rapidapi.com/games/" 
-    data = get_api_info(url, api_key, '1')
+    data = get_api_info(url, api_key, 1)
     #print(data)
+
     record = count_team_wins_losses(data, 1)
     print(record)
     cur, conn = set_up_database("NBAData.db")
     set_up_team_table(cur, conn)
+    teamIDCount = 1
+    teamRecordList = []
+
+
+
     
     
 
