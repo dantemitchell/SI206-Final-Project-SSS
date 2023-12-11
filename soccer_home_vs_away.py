@@ -20,6 +20,8 @@ def get_22_23_records(url1, bgcolors):
     home_team_names23 = []
     home_wins_draws_losses23 = []
     away_wins_draws_losses23 = []
+    home_goal_diff23 = []
+    away_goal_diff23 = []
     
     for color in bgcolors:
         team_data = []
@@ -29,7 +31,12 @@ def get_22_23_records(url1, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
+                    
+                    
                     away_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3])) 
+                    
+                    away_goal_diff23.append(int(team_data[4]))
+                     
                     team_data = [] 
                 current_team = td.get_text(strip=True)
                 away_team_names23.append(f"{current_team} {season}")
@@ -39,6 +46,9 @@ def get_22_23_records(url1, bgcolors):
                     team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             away_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))
+            
+            away_goal_diff23.append(int(team_data[4]))
+            
     for color in bgcolors:
         team_data = []
         current_team = ''
@@ -48,16 +58,23 @@ def get_22_23_records(url1, bgcolors):
             if td.find('a'):
                 if team_count > 0 and team_data:
                     home_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))  
+                     
+                    home_goal_diff23.append(int(team_data[4]))
+                    
                     team_data = []  
                 current_team = td.get_text(strip=True)
                 home_team_names23.append(f"{current_team} {season}")
                 team_count += 1
             else:
                 if current_team and td.text.isdigit():
-                    team_data.append(int(td.get_text(strip=True)))  
+                    team_data.append(int(td.get_text(strip=True)))
         if team_data:
             home_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))
-    return away_team_names23, away_wins_draws_losses23, home_team_names23, home_wins_draws_losses23
+            
+            home_goal_diff23.append(int(team_data[4]))
+              
+    return away_team_names23, away_wins_draws_losses23, home_team_names23, home_wins_draws_losses23, away_goal_diff23, home_goal_diff23
+
 
 def get_21_22_records(url2, bgcolors):
     
@@ -75,6 +92,8 @@ def get_21_22_records(url2, bgcolors):
     home_team_names22 = []
     home_wins_draws_losses22 = []
     away_wins_draws_losses22 = []
+    home_goal_diff22 = []
+    away_goal_diff22 = []
     
     for color in bgcolors:
         team_data = []
@@ -84,7 +103,8 @@ def get_21_22_records(url2, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    away_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))  
+                    away_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3])) 
+                    away_goal_diff22.append(int(team_data[4])) 
                     team_data = []  
                 current_team = td.get_text(strip=True)
                 away_team_names22.append(f"{current_team} {season}")
@@ -94,6 +114,7 @@ def get_21_22_records(url2, bgcolors):
                     team_data.append(int(td.get_text(strip=True))) 
         if team_data:
             away_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))
+            away_goal_diff22.append(int(team_data[4]))
     for color in bgcolors:
         team_data = []
         current_team = ''
@@ -103,6 +124,7 @@ def get_21_22_records(url2, bgcolors):
             if td.find('a'):
                 if team_count > 0 and team_data:
                     home_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3])) 
+                    home_goal_diff22.append(int(team_data[4]))
                     team_data = [] 
                 current_team = td.get_text(strip=True)
                 home_team_names22.append(f"{current_team} {season}")
@@ -112,7 +134,8 @@ def get_21_22_records(url2, bgcolors):
                     team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             home_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))
-    return away_team_names22, away_wins_draws_losses22, home_team_names22, home_wins_draws_losses22
+            home_goal_diff22.append(int(team_data[4]))
+    return away_team_names22, away_wins_draws_losses22, home_team_names22, home_wins_draws_losses22, away_goal_diff22, home_goal_diff22
 
 def get_20_21_records(url3, bgcolors):
     
@@ -130,6 +153,8 @@ def get_20_21_records(url3, bgcolors):
     home_team_names21 = []
     home_wins_draws_losses21 = []
     away_wins_draws_losses21 = []
+    home_goal_diff21 = []
+    away_goal_diff21 = []
     
     for color in bgcolors:
         team_data = []
@@ -140,6 +165,7 @@ def get_20_21_records(url3, bgcolors):
             if td.find('a'):
                 if team_count > 0 and team_data:
                     away_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))  
+                    away_goal_diff21.append(int(team_data[4]))
                     team_data = []  
                 current_team = td.get_text(strip=True)
                 away_team_names21.append(f"{current_team} {season}")
@@ -149,6 +175,7 @@ def get_20_21_records(url3, bgcolors):
                     team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             away_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))
+            away_goal_diff21.append(int(team_data[4]))
     for color in bgcolors:
         team_data = []
         current_team = ''
@@ -157,7 +184,8 @@ def get_20_21_records(url3, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    home_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))  
+                    home_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))
+                    home_goal_diff21.append(int(team_data[4]))  
                     team_data = []  
                 current_team = td.get_text(strip=True)
                 home_team_names21.append(f"{current_team} {season}")
@@ -167,7 +195,8 @@ def get_20_21_records(url3, bgcolors):
                     team_data.append(int(td.get_text(strip=True))) 
         if team_data:
             home_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))
-    return away_team_names21, away_wins_draws_losses21, home_team_names21, home_wins_draws_losses21
+            home_goal_diff21.append(int(team_data[4]))
+    return away_team_names21, away_wins_draws_losses21, home_team_names21, home_wins_draws_losses21, away_goal_diff21, home_goal_diff21
 
 
 def get_19_20_records(url4, bgcolors):
@@ -186,6 +215,8 @@ def get_19_20_records(url4, bgcolors):
     home_team_names20 = []
     home_wins_draws_losses20 = []
     away_wins_draws_losses20 = []
+    home_goal_diff20 = []
+    away_goal_diff20 = []
     
     for color in bgcolors:
         team_data = []
@@ -195,7 +226,8 @@ def get_19_20_records(url4, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    away_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3])) 
+                    away_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))
+                    away_goal_diff20.append(int(team_data[4])) 
                     team_data = []  
                 current_team = td.get_text(strip=True)
                 away_team_names20.append(f"{current_team} {season}")
@@ -205,6 +237,7 @@ def get_19_20_records(url4, bgcolors):
                     team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             away_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))
+            away_goal_diff20.append(int(team_data[4]))
     for color in bgcolors:
         team_data = []
         current_team = ''
@@ -213,7 +246,8 @@ def get_19_20_records(url4, bgcolors):
         for td in td_elements:
             if td.find('a'):
                 if team_count > 0 and team_data:
-                    home_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))  
+                    home_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))
+                    home_goal_diff20.append(int(team_data[4]))  
                     team_data = []  
                 current_team = td.get_text(strip=True)
                 home_team_names20.append(f"{current_team} {season}")
@@ -223,7 +257,8 @@ def get_19_20_records(url4, bgcolors):
                     team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             home_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))
-    return away_team_names20, away_wins_draws_losses20, home_team_names20, home_wins_draws_losses20
+            home_goal_diff20.append(int(team_data[4]))
+    return away_team_names20, away_wins_draws_losses20, home_team_names20, home_wins_draws_losses20, away_goal_diff20, home_goal_diff20
 
 def get_18_19_records(url5, bgcolors):
     
@@ -241,6 +276,8 @@ def get_18_19_records(url5, bgcolors):
     home_team_names19 = []
     home_wins_draws_losses19 = []
     away_wins_draws_losses19 = []
+    home_goal_diff19 = []
+    away_goal_diff19 = []
     
     for color in bgcolors:
         team_data = []
@@ -251,6 +288,7 @@ def get_18_19_records(url5, bgcolors):
             if td.find('a'):
                 if team_count > 0 and team_data:
                     away_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))  
+                    away_goal_diff19.append(int(team_data[4]))
                     team_data = []  
                 current_team = td.get_text(strip=True)
                 away_team_names19.append(f"{current_team} {season}")
@@ -260,6 +298,7 @@ def get_18_19_records(url5, bgcolors):
                     team_data.append(int(td.get_text(strip=True)))  
         if team_data:
             away_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))
+            away_goal_diff19.append(int(team_data[4]))
     for color in bgcolors:
         team_data = []
         current_team = ''
@@ -269,6 +308,7 @@ def get_18_19_records(url5, bgcolors):
             if td.find('a'):
                 if team_count > 0 and team_data:
                     home_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))  
+                    home_goal_diff19.append(int(team_data[4]))
                     team_data = []  
                 current_team = td.get_text(strip=True)
                 home_team_names19.append(f"{current_team} {season}")
@@ -278,7 +318,8 @@ def get_18_19_records(url5, bgcolors):
                     team_data.append(int(td.get_text(strip=True))) 
         if team_data:
             home_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))
-    return away_team_names19, away_wins_draws_losses19, home_team_names19, home_wins_draws_losses19
+            home_goal_diff19.append(int(team_data[4]))
+    return away_team_names19, away_wins_draws_losses19, home_team_names19, home_wins_draws_losses19, away_goal_diff19, home_goal_diff19
 
 
 def create_db():
@@ -294,20 +335,26 @@ def create_db():
             home_losses INTEGER,
             away_wins INTEGER,
             away_draws INTEGER,
-            away_losses INTEGER
+            away_losses INTEGER,
+            home_goal_diff INTEGER,
+            away_goal_diff INTEGER
         )
     ''')
     return conn, c
 
-def insert_data_into_combined_table(c, home_teams, home_results, away_teams, away_results):
+
+def insert_data_into_combined_table(c, home_teams, home_results, away_teams, away_results, away_goal_diff, home_goal_diff):
     for i in range(len(home_teams)):
         team_name = home_teams[i]
         home_wins, home_draws, home_losses = home_results[i]
         away_wins, away_draws, away_losses = away_results[i]
+        home_goal_diff_1 = home_goal_diff[i]
+        away_goal_diff_1 = away_goal_diff[i]
+
         c.execute('''
-            INSERT INTO football_records (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses))
+            INSERT INTO football_records (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses, away_goal_diff, home_goal_diff)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses, away_goal_diff_1, home_goal_diff_1))
 
 
 def main():
@@ -330,16 +377,19 @@ def main():
        
     url, get_records_func = urls[index]
    
-    away_team_names, away_wins_and_losses, home_team_names, home_wins_draws_losses = get_records_func(url, bgcolor_list)
-
+    away_team_names, away_wins_and_losses, home_team_names, home_wins_draws_losses, away_goal_diff, home_goal_diff = get_records_func(url, bgcolor_list)
+    
     conn, c = create_db()
 
     chunk_home_teams = home_team_names[:20]
     chunk_home_results = home_wins_draws_losses[:20]
     chunk_away_teams = away_team_names[:20]
     chunk_away_results = away_wins_and_losses[:20]
+    chunk_home_goal_diff = home_goal_diff[:20]
+    chunk_away_goal_diff = away_goal_diff[:20]
+    
 
-    insert_data_into_combined_table(c, chunk_home_teams, chunk_home_results, chunk_away_teams, chunk_away_results)
+    insert_data_into_combined_table(c, chunk_home_teams, chunk_home_results, chunk_away_teams, chunk_away_results, chunk_away_goal_diff, chunk_home_goal_diff)
     
     conn.commit()
     conn.close()
