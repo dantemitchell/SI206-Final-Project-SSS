@@ -381,15 +381,7 @@ def main():
     
     conn, c = create_db()
 
-    chunk_home_teams = home_team_names[:20]
-    chunk_home_results = home_wins_draws_losses[:20]
-    chunk_away_teams = away_team_names[:20]
-    chunk_away_results = away_wins_and_losses[:20]
-    chunk_home_goal_diff = home_goal_diff[:20]
-    chunk_away_goal_diff = away_goal_diff[:20]
-    
-
-    insert_data_into_combined_table(c, chunk_home_teams, chunk_home_results, chunk_away_teams, chunk_away_results, chunk_away_goal_diff, chunk_home_goal_diff)
+    insert_data_into_combined_table(c, home_team_names, home_wins_draws_losses, away_team_names, away_wins_and_losses, away_goal_diff, home_goal_diff)
     
     conn.commit()
     conn.close()
