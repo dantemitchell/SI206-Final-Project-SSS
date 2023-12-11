@@ -1,10 +1,11 @@
 import sqlite3
 from bs4 import BeautifulSoup
 import requests
+import os
 
 
-url1 = "https://www.worldfootball.net/schedule/eng-premier-league-2022-2023-spieltag/38/"
-bgcolor_list = ['#AFD179', '#D6EAB6', '#E8F5D3', '#FFFFFF', '#A5CCE9']
+# url1 = "https://www.worldfootball.net/schedule/eng-premier-league-2022-2023-spieltag/38/"
+# bgcolor_list = ['#AFD179', '#D6EAB6', '#E8F5D3', '#FFFFFF', '#A5CCE9']
 
 def get_22_23_records(url1, bgcolors):
     # Get name of each player and the number of home goals and away goals, seperately.
@@ -61,13 +62,13 @@ def get_22_23_records(url1, bgcolors):
             home_wins_draws_losses23.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names23, away_wins_draws_losses23, home_team_names23, home_wins_draws_losses23
 # Call the function with the soup and bgcolor list
-away_team_names23, away_wins_and_losses23, home_team_names23, home_wins_draws_losses23 = get_22_23_records(url1, bgcolor_list)
+# away_team_names23, away_wins_and_losses23, home_team_names23, home_wins_draws_losses23 = get_22_23_records(url1, bgcolor_list)
 # print(away_team_names23, away_wins_and_losses23)
 # print(home_team_names23, home_wins_draws_losses23)
 
 
-url2 = "https://www.worldfootball.net/schedule/eng-premier-league-2021-2022-spieltag/38/"
-def get_21_22_records(url1, bgcolors):
+# url2 = "https://www.worldfootball.net/schedule/eng-premier-league-2021-2022-spieltag/38/"
+def get_21_22_records(url2, bgcolors):
     # Get name of each player and the number of home goals and away goals, seperately.
     # FIRST PAGE
     season = "21-22"
@@ -75,7 +76,7 @@ def get_21_22_records(url1, bgcolors):
     r1 = requests.get(away_url)
     soup_away = BeautifulSoup(r1.content, 'html.parser')
 
-    home_url = f"{url1}heim/"
+    home_url = f"{url2}heim/"
     r2 = requests.get(home_url)
     soup_home = BeautifulSoup(r2.content, 'html.parser')
 
@@ -121,12 +122,12 @@ def get_21_22_records(url1, bgcolors):
         if team_data:
             home_wins_draws_losses22.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names22, away_wins_draws_losses22, home_team_names22, home_wins_draws_losses22
-away_team_names22, away_wins_and_losses22, home_team_names22, home_wins_draws_losses22 = get_21_22_records(url2, bgcolor_list)
+# away_team_names22, away_wins_and_losses22, home_team_names22, home_wins_draws_losses22 = get_21_22_records(url2, bgcolor_list)
 # print(away_team_names22, away_wins_and_losses22)
 # print(home_team_names22, home_wins_draws_losses22)
 
 
-url3 = "https://www.worldfootball.net/schedule/eng-premier-league-2020-2021-spieltag/38/"
+# url3 = "https://www.worldfootball.net/schedule/eng-premier-league-2020-2021-spieltag/38/"
 def get_20_21_records(url3, bgcolors):
     # Get name of each player and the number of home goals and away goals, seperately.
     # FIRST PAGE
@@ -181,13 +182,13 @@ def get_20_21_records(url3, bgcolors):
         if team_data:
             home_wins_draws_losses21.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names21, away_wins_draws_losses21, home_team_names21, home_wins_draws_losses21
-away_team_names21, away_wins_and_losses21, home_team_names21, home_wins_draws_losses21 = get_20_21_records(url3, bgcolor_list)
+# away_team_names21, away_wins_and_losses21, home_team_names21, home_wins_draws_losses21 = get_20_21_records(url3, bgcolor_list)
 # print(away_team_names21, away_wins_and_losses21)
 # print(home_team_names21, home_wins_draws_losses21)
 
 
-url4 = "https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/38/"
-def get_19_20_records(url3, bgcolors):
+# url4 = "https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/38/"
+def get_19_20_records(url4, bgcolors):
     # Get name of each player and the number of home goals and away goals, seperately.
     # FIRST PAGE
     season = "19-20"
@@ -241,14 +242,14 @@ def get_19_20_records(url3, bgcolors):
         if team_data:
             home_wins_draws_losses20.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names20, away_wins_draws_losses20, home_team_names20, home_wins_draws_losses20
-away_team_names20, away_wins_and_losses20, home_team_names20, home_wins_draws_losses20 = get_19_20_records(url4, bgcolor_list)
+# away_team_names20, away_wins_and_losses20, home_team_names20, home_wins_draws_losses20 = get_19_20_records(url4, bgcolor_list)
 # print(away_team_names20, away_wins_and_losses20)
 # print(home_team_names20, home_wins_draws_losses20)
 
 
 
-url5 = "https://www.worldfootball.net/schedule/eng-premier-league-2018-2019-spieltag/38/"
-def get_18_19_records(url3, bgcolors):
+# url5 = "https://www.worldfootball.net/schedule/eng-premier-league-2018-2019-spieltag/38/"
+def get_18_19_records(url5, bgcolors):
     # Get name of each player and the number of home goals and away goals, seperately.
     # FIRST PAGE
     season = "18-19"
@@ -302,9 +303,9 @@ def get_18_19_records(url3, bgcolors):
         if team_data:
             home_wins_draws_losses19.append((team_data[1], team_data[2], team_data[3]))
     return away_team_names19, away_wins_draws_losses19, home_team_names19, home_wins_draws_losses19
-away_team_names19, away_wins_and_losses19, home_team_names19, home_wins_draws_losses19 = get_18_19_records(url5, bgcolor_list)
-print(away_team_names19, away_wins_and_losses19)
-print(home_team_names19, home_wins_draws_losses19)
+# away_team_names19, away_wins_and_losses19, home_team_names19, home_wins_draws_losses19 = get_18_19_records(url5, bgcolor_list)
+# print(away_team_names19, away_wins_and_losses19)
+# print(home_team_names19, home_wins_draws_losses19)
 
 def create_db():
     conn = sqlite3.connect('football_records_combined.db')
@@ -334,40 +335,61 @@ def insert_data_into_combined_table(c, home_teams, home_results, away_teams, awa
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses))
 
-# Insert data for each season into the combined table
+
 def main():
-    
-    url1 = "https://www.worldfootball.net/schedule/eng-premier-league-2022-2023-spieltag/38/"
-    url2 = "https://www.worldfootball.net/schedule/eng-premier-league-2021-2022-spieltag/38/"
-    url3 = "https://www.worldfootball.net/schedule/eng-premier-league-2020-2021-spieltag/38/"
-    url4 = "https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/38/"
-    url5 = "https://www.worldfootball.net/schedule/eng-premier-league-2018-2019-spieltag/38/"
+    urls = [
+        ("https://www.worldfootball.net/schedule/eng-premier-league-2022-2023-spieltag/38/", get_22_23_records),
+        ("https://www.worldfootball.net/schedule/eng-premier-league-2021-2022-spieltag/38/", get_21_22_records),
+        ("https://www.worldfootball.net/schedule/eng-premier-league-2020-2021-spieltag/38/", get_20_21_records),
+        ("https://www.worldfootball.net/schedule/eng-premier-league-2019-2020-spieltag/38/", get_19_20_records),
+        ("https://www.worldfootball.net/schedule/eng-premier-league-2018-2019-spieltag/38/", get_18_19_records)
+    ]
     bgcolor_list = ['#AFD179', '#D6EAB6', '#E8F5D3', '#FFFFFF', '#A5CCE9']
 
-    # Extracting 18-19 records
-    away_team_names23, away_wins_and_losses23, home_team_names23, home_wins_draws_losses23 = get_22_23_records(url1, bgcolor_list)
-    away_team_names22, away_wins_and_losses22, home_team_names22, home_wins_draws_losses22 = get_21_22_records(url2, bgcolor_list)
-    away_team_names21, away_wins_and_losses21, home_team_names21, home_wins_draws_losses21 = get_20_21_records(url3, bgcolor_list)
-    away_team_names20, away_wins_and_losses20, home_team_names20, home_wins_draws_losses20 = get_19_20_records(url4, bgcolor_list)
-    away_team_names19, away_wins_and_losses19, home_team_names19, home_wins_draws_losses19 = get_18_19_records(url5, bgcolor_list)
-    
+# Load last processed URL and line count
+    # if os.path.exists("last_processed.txt"):
+    #     with open("last_processed.txt", "r") as file:
+    #         last_processed_url, count = file.read().split(",")
+    #         count = int(count)
+    # else:
+    #     last_processed_url = ""
+    #     count = 0
+    if os.path.exists("last_processed_index.txt"):
+        with open("last_processed_index.txt", "r") as file:
+            index = int(file.read())
+    else:
+        with open("last_processed_index.txt", "w") as file:
+            index = 0
+            file.write(str(index))
+        
+        # Find the index of the last processed URL to continue from
+    url, get_records_func = urls[index]
+   
+    # Process the data for the current URL
+    away_team_names, away_wins_and_losses, home_team_names, home_wins_draws_losses = get_records_func(url, bgcolor_list)
 
-    # Create database and cursor
     conn, c = create_db()
 
-    # Insert 18-19 records into the database
-    insert_data_into_combined_table(c, home_team_names23, home_wins_draws_losses23, away_team_names23, away_wins_and_losses23)
-    insert_data_into_combined_table(c, home_team_names22, home_wins_draws_losses22, away_team_names22, away_wins_and_losses22)
-    insert_data_into_combined_table(c, home_team_names21, home_wins_draws_losses21, away_team_names21, away_wins_and_losses21)
-    insert_data_into_combined_table(c, home_team_names20, home_wins_draws_losses20, away_team_names20, away_wins_and_losses20)
-    insert_data_into_combined_table(c, home_team_names19, home_wins_draws_losses19, away_team_names19, away_wins_and_losses19)
+    # Process 20 lines of data
+    chunk_home_teams = home_team_names[:20]
+    chunk_home_results = home_wins_draws_losses[:20]
+    chunk_away_teams = away_team_names[:20]
+    chunk_away_results = away_wins_and_losses[:20]
 
+    # Insert the chunk of data into the database
+    insert_data_into_combined_table(c, chunk_home_teams, chunk_home_results, chunk_away_teams, chunk_away_results)
 
     # Commit changes and close connection
     conn.commit()
     conn.close()
 
+    # Increment index for the next run
+    index = (index + 1) % len(urls)
+
+    # Update the index file for the next run
+    with open("last_processed_index.txt", "w") as file:
+        file.write(str(index))
+
+
 if __name__ == "__main__":
     main()
-# conn.commit()
-# conn.close()
