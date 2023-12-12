@@ -2,7 +2,7 @@ import statsapi
 import sqlite3
 import matplotlib.pyplot as plt
 import csv
-
+import os
 
 def buildTeamList():
     teamjson = statsapi.get('teams', {'season':'2023'})['teams'] #{'leagueIds':'Major League Baseball'}
