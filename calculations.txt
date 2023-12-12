@@ -1,0 +1,5 @@
+Average Home Wins: 20.13
+Average Home Losses: 16.32
+Average Away Wins: 16.62
+Average Away Losses: 20.07
+Average Point Differential: 37.27
