@@ -1,0 +1,6 @@
+Average Home Wins: 8.44
+Average Home Losses: 6.35
+Average Away Wins: 6.35
+Average Away Losses: 8.44
+Average Home Goal Differential: 17.31
+Average Away Goal Differential: 15.39
