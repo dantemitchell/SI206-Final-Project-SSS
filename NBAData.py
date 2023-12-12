@@ -330,7 +330,7 @@ def main():
     set_up_team_table(cur, conn)
     set_up_record_table(record_list, cur, conn)
 
-    updated_output_file_path = calculate_averages_and_point_differential_and_write_to_file('NBAData2.db')
+    updated_output_file_path = calculate_averages_and_point_differential_and_write_to_file('calculations.txt')
     updated_output_file_path
 
 if __name__ == "__main__":
