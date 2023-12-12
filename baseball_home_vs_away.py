@@ -271,12 +271,11 @@ def addSummaryRows(dbName, combinedTableName):
     '''
     cursor.execute(team_summary_query)
 
-    # Calculate aggregate stats for each season
     season_summary_query = f'''
     INSERT INTO {combinedTableName} (TeamName, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff, WinPctDiff)
     SELECT
-        TeamName,
-        TeamID,
+        'MLB' AS TeamName,
+        1 AS TeamID,
         Season,
         SUM(HOMEWins) AS HOMEWins,
         SUM(HOMELosses) AS HOMELosses,
@@ -290,7 +289,7 @@ def addSummaryRows(dbName, combinedTableName):
         AVG(AWAYAvgRDiff) AS AWAYAvgRDiff,
         AVG(WinPctDiff) AS WinPctDiff
     FROM {combinedTableName}
-    GROUP BY TeamName, TeamID, Season;
+    GROUP BY Season;
     '''
     cursor.execute(season_summary_query)
 
@@ -330,12 +329,52 @@ def deleteDuplicates():
     conn.commit()
     conn.close()
 
+def plot_home_away_winning_percentage(dbName, tableName, team_name='MLB', team_id=1):
+    # Connect to the SQLite database
+    conn = sqlite3.connect(dbName)
+    cursor = conn.cursor()
+
+    # Query to retrieve relevant data and calculate winning percentages
+    query = f"""
+            SELECT Season,
+                   AVG(CASE WHEN TeamName = ? AND TeamID = ? THEN HOMEWins*1.0 / (HOMEWins + HOMELosses) END) AS HOMEWinPct,
+                   AVG(CASE WHEN TeamName = ? AND TeamID = ? THEN AWAYWins*1.0 / (AWAYWins + AWAYLosses) END) AS AWAYWinPct
+            FROM {tableName}
+            WHERE Season != 'All Seasons'
+            GROUP BY Season
+            """
+
+    # Execute the query
+    cursor.execute(query, (team_name, team_id, team_name, team_id))
+
+    # Fetch the data
+    data = cursor.fetchall()
+
+    # Close the database connection
+    conn.close()
+
+    # Unpack the data
+    seasons, home_win_pct, away_win_pct = zip(*data)
+
+    # Create a line plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(seasons, home_win_pct, marker='o', linestyle='-', color='blue', label='Home Win Percentage')
+    plt.plot(seasons, away_win_pct, marker='o', linestyle='-', color='red', label='Away Win Percentage')
+
+    # Set plot labels and title
+    plt.xlabel('Season')
+    plt.ylabel('Winning Percentage')
+    plt.title('Home and Away Winning Percentage Over Seasons')
+    plt.legend()
+
+    # Show the plot
+    plt.show()
 
 def main():
     teamLst = buildTeamList()
     homeStatLst = buildStatList(True)
     awayStatLst = buildStatList(False)
-    createDatabase(homeStatLst, "Baseball Data.db", "HomeData")
+    """createDatabase(homeStatLst, "Baseball Data.db", "HomeData")
     createDatabase(awayStatLst, "Baseball Data.db", "AwayData")
     seasons = ['2019', '2021', '2022', '2023']
     for season in seasons:
@@ -344,12 +383,13 @@ def main():
         for team, teamID in teamLst:
             populateTable("HomeData", team, hDict, "Baseball Data.db", 'HOME')
             populateTable("AwayData", team, aDict, "Baseball Data.db", 'AWAY')
-            print(f"{season} {team} rows populated")
+            print(f"{season} {team} rows populated")"""
     joinTables("Baseball Data.db", "HomeData", "AwayData", "CombinedData")
     calculateAvgRDiff("Baseball Data.db", "CombinedData")
     calculateWinPctDiff("Baseball Data.db", "CombinedData")
     addSummaryRows("Baseball Data.db", "CombinedData")
     deleteDuplicates()
     exportToCSV("Baseball Data.db", "CombinedData", "calculated_columns.csv")
+    plot_home_away_winning_percentage('Baseball Data.db', 'CombinedData')
     
 main()
