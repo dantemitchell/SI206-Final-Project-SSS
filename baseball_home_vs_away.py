@@ -20,7 +20,7 @@ def buildStatList(home = True):
         locStr = "HOME"
     else:
         locStr = "AWAY"
-    newBoxCat = [("TeamName", "TEXT"), ("TeamID", "INTEGER"), ("Season", "INTEGER"), (f"{locStr}Wins", "INTEGER"), (f"{locStr}Losses", "INTEGER"), (f"{locStr}RScored", "INTEGER"), (f"{locStr}RAllowed", "INTEGER")]
+    newBoxCat = [("KEY", "INTEGER PRIMARY KEY"), ("TeamID", "INTEGER"), ("Season", "INTEGER"), (f"{locStr}Wins", "INTEGER"), (f"{locStr}Losses", "INTEGER"), (f"{locStr}RScored", "INTEGER"), (f"{locStr}RAllowed", "INTEGER")]
     return newBoxCat
 
 def createDatabase(statList, dbName, tableName):
@@ -46,9 +46,7 @@ def createDatabase(statList, dbName, tableName):
 
 def processBoxScore(gamePk):
     game = statsapi.game_scoring_play_data(gamePk)
-    homeTeam = game['home']['name']
     homeId = game['home']['id']
-    awayTeam = game['away']['name']
     awayId = game['away']['id']
     try: 
         homeScore = game['plays'][-1]['result']['homeScore']
@@ -57,7 +55,7 @@ def processBoxScore(gamePk):
     awayScore = game['plays'][-1]['result']['awayScore']
     homeTeamWin = homeScore > awayScore
     awayTeamWin = awayScore > homeScore
-    return (homeTeam, homeId, homeTeamWin, homeScore, awayScore), (awayTeam, awayId, awayTeamWin, awayScore, homeScore)
+    return (homeId, homeTeamWin, homeScore, awayScore), (awayId, awayTeamWin, awayScore, homeScore)
 
 def createDataDict(season):
     homeResultsDict = {}
@@ -84,45 +82,45 @@ def createDataDict(season):
             homeLoss = 1
             awayWin = 1
         if homeData[0] not in homeResultsDict:
-            innerDict = {'TeamID': homeData[1], "Season": int(season), 'HOMEWins' : homeWin, 'HOMELosses': homeLoss, "HOMERScored": homeData[3], 'HOMERAllowed': homeData[4]}
+            innerDict = {"Season": int(season), 'HOMEWins' : homeWin, 'HOMELosses': homeLoss, "HOMERScored": homeData[2], 'HOMERAllowed': homeData[3]}
             homeResultsDict[homeData[0]] = innerDict
         else:
             homeResultsDict[homeData[0]]['HOMEWins'] += homeWin
             homeResultsDict[homeData[0]]['HOMELosses'] += homeLoss
-            homeResultsDict[homeData[0]]['HOMERScored'] += homeData[3]
-            homeResultsDict[homeData[0]]['HOMERAllowed'] += homeData[4]
+            homeResultsDict[homeData[0]]['HOMERScored'] += homeData[2]
+            homeResultsDict[homeData[0]]['HOMERAllowed'] += homeData[3]
 
         if awayData[0] not in awayResultsDict:
-            innerDict = {'TeamID': awayData[1], "Season": int(season), 'AWAYWins' : awayWin, 'AWAYLosses': awayLoss, "AWAYRScored": awayData[3], 'AWAYRAllowed': awayData[4]}
+            innerDict = {"Season": int(season), 'AWAYWins' : awayWin, 'AWAYLosses': awayLoss, "AWAYRScored": awayData[2], 'AWAYRAllowed': awayData[3]}
             awayResultsDict[awayData[0]] = innerDict
         else:
             awayResultsDict[awayData[0]]['AWAYWins'] += awayWin
             awayResultsDict[awayData[0]]['AWAYLosses'] += awayLoss
-            awayResultsDict[awayData[0]]['AWAYRScored'] += awayData[3]
-            awayResultsDict[awayData[0]]['AWAYRAllowed'] += awayData[4]
+            awayResultsDict[awayData[0]]['AWAYRScored'] += awayData[2]
+            awayResultsDict[awayData[0]]['AWAYRAllowed'] += awayData[3]
     return homeResultsDict, awayResultsDict
 
 
-def populateTable(tableName, TeamName, resultsDict, dbName, location = "HOME"):
+def populateTable(tableName, TeamID, resultsDict, dbName, location = "HOME"):
     conn = sqlite3.connect(dbName)
     cursor = conn.cursor()
     # Insert data into the table
     insert_data_query = f'''
-    INSERT INTO {tableName} (TeamName, TeamId, Season, {location}Wins, {location}Losses, {location}RScored, {location}RAllowed)
+    INSERT INTO {tableName} (KEY, TeamId, Season, {location}Wins, {location}Losses, {location}RScored, {location}RAllowed)
     VALUES (?, ?, ?, ?, ?, ?, ?);
     '''
-
+    
     # Assuming resultsDict contains only one team's data
-    team_data = resultsDict.get(TeamName, None)
+    team_data = resultsDict.get(TeamID, None)
     if team_data:
-        team_id = team_data.get("TeamID", None) # Assuming TeamID is passed as an argument
         season = team_data.get("Season", None)
+        key = int(f'{TeamID}{season}')
         wins = team_data.get(f"{location}Wins", None)
         losses = team_data.get(f"{location}Losses", None)
         rscored = team_data.get(f"{location}RScored", None)
         rallowed = team_data.get(f"{location}RAllowed", None)
 
-        cursor.execute(insert_data_query, (TeamName, team_id, season, wins, losses, rscored, rallowed))
+        cursor.execute(insert_data_query, (key, TeamID, season, wins, losses, rscored, rallowed))
 
     conn.commit()
     conn.close()
@@ -145,7 +143,7 @@ def joinTables(dbName, homeTableName, awayTableName, outputTableName):
     join_tables_query = f'''
     CREATE TABLE IF NOT EXISTS {outputTableName} AS
     SELECT
-        h.TeamName AS TeamName,
+        h.KEY AS KEY,
         h.TeamID AS TeamID,
         h.Season AS Season,
         h.HOMEWins AS HOMEWins,
@@ -157,7 +155,7 @@ def joinTables(dbName, homeTableName, awayTableName, outputTableName):
         a.AWAYRScored AS AWAYRScored,
         a.AWAYRAllowed AS AWAYRAllowed
     FROM {homeTableName} h
-    JOIN {awayTableName} a ON h.TeamID = a.TeamID AND h.Season = a.Season;
+    JOIN {awayTableName} a ON h.KEY = a.KEY;
     '''
 
     cursor.execute(join_tables_query)
@@ -249,9 +247,9 @@ def addSummaryRows(dbName, combinedTableName):
 
     # Calculate aggregate stats for each team
     team_summary_query = f'''
-    INSERT INTO {combinedTableName} (TeamName, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff, WinPctDiff)
+    INSERT INTO {combinedTableName} (KEY, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff, WinPctDiff)
     SELECT
-        TeamName,
+        SUM(1000 + TeamID) AS KEY,
         TeamID,
         'All Seasons' AS Season,
         SUM(HOMEWins) AS HOMEWins,
@@ -266,14 +264,14 @@ def addSummaryRows(dbName, combinedTableName):
         AVG(AWAYAvgRDiff) AS AWAYAvgRDiff,
         AVG(WinPctDiff) AS WinPctDiff
     FROM {combinedTableName}
-    GROUP BY TeamName, TeamID;
+    GROUP BY TeamID;
     '''
     cursor.execute(team_summary_query)
 
     season_summary_query = f'''
-    INSERT INTO {combinedTableName} (TeamName, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff, WinPctDiff)
+    INSERT INTO {combinedTableName} (KEY, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff, WinPctDiff)
     SELECT
-        'MLB' AS TeamName,
+        SUM(20000 + Season) AS KEY,
         1 AS TeamID,
         Season,
         SUM(HOMEWins) AS HOMEWins,
@@ -300,7 +298,7 @@ def exportToCSV(dbName, tableName, csvFileName):
     cursor = conn.cursor()
 
     # Specify the columns you want to export
-    selected_columns = ['TeamName', 'TeamID', 'Season', 'HOMEAvgRDiff', 'AWAYAvgRDiff', 'WinPctDiff']
+    selected_columns = ['KEY', 'TeamID', 'Season', 'HOMEAvgRDiff', 'AWAYAvgRDiff', 'WinPctDiff']
 
     # Construct the SELECT statement with the specified columns
     select_query = f"SELECT {', '.join(selected_columns)} FROM {tableName}"
@@ -324,11 +322,11 @@ def exportToCSV(dbName, tableName, csvFileName):
 def deleteDuplicates():
     conn = sqlite3.connect("Baseball Data.db")
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM CombinedData WHERE ROWID NOT IN (SELECT MIN(ROWID) FROM CombinedData GROUP BY TeamName, TeamID, Season);")
+    cursor.execute("DELETE FROM CombinedData WHERE ROWID NOT IN (SELECT MIN(ROWID) FROM CombinedData GROUP BY KEY, TeamID, Season);")
     conn.commit()
     conn.close()
 
-def plot_home_away_winning_percentage(dbName, tableName, team_name='MLB', team_id=1):
+def plot_home_away_winning_percentage(dbName, tableName, team_id=1):
     # Connect to the SQLite database
     conn = sqlite3.connect(dbName)
     cursor = conn.cursor()
@@ -336,19 +334,19 @@ def plot_home_away_winning_percentage(dbName, tableName, team_name='MLB', team_i
     # Query to retrieve relevant data and calculate winning percentages and average run differentials
     query = f"""
             SELECT Season,
-                   AVG(CASE WHEN TeamName = ? AND TeamID = ? THEN HOMEWins*1.0 / (HOMEWins + HOMELosses) END) AS HOMEWinPct,
-                   AVG(CASE WHEN TeamName = ? AND TeamID = ? THEN AWAYWins*1.0 / (AWAYWins + AWAYLosses) END) AS AWAYWinPct,
-                   AVG(CASE WHEN TeamName = ? AND TeamID = ? THEN (HOMEWins + AWAYWins)*1.0 / (HOMEWins + AWAYWins + HOMELosses + AWAYLosses) END) AS TOTALWinPct,
-                   AVG(CASE WHEN TeamName = ? AND TeamID = ? THEN HOMEAvgRDiff END) AS HOMEAvgRDiff,
-                   AVG(CASE WHEN TeamName = ? AND TeamID = ? THEN AWAYAvgRDiff END) AS AWAYAvgRDiff,
-                   AVG(CASE WHEN TeamName = ? AND TeamID = ? THEN ((HOMERScored + AWAYRScored) - (HOMERAllowed + AWAYRAllowed))/(HOMEWins + AWAYWins + HOMELosses + AWAYLosses) END) AS TOTALAvgRDiff
+                   AVG(CASE WHEN TeamID = ? THEN HOMEWins*1.0 / (HOMEWins + HOMELosses) END) AS HOMEWinPct,
+                   AVG(CASE WHEN TeamID = ? THEN AWAYWins*1.0 / (AWAYWins + AWAYLosses) END) AS AWAYWinPct,
+                   AVG(CASE WHEN TeamID = ? THEN (HOMEWins + AWAYWins)*1.0 / (HOMEWins + AWAYWins + HOMELosses + AWAYLosses) END) AS TOTALWinPct,
+                   AVG(CASE WHEN TeamID = ? THEN HOMEAvgRDiff END) AS HOMEAvgRDiff,
+                   AVG(CASE WHEN TeamID = ? THEN AWAYAvgRDiff END) AS AWAYAvgRDiff,
+                   AVG(CASE WHEN TeamID = ? THEN ((HOMERScored + AWAYRScored) - (HOMERAllowed + AWAYRAllowed))/(HOMEWins + AWAYWins + HOMELosses + AWAYLosses) END) AS TOTALAvgRDiff
             FROM {tableName}
             WHERE Season != 'All Seasons'
             GROUP BY Season
             """
 
     # Execute the query
-    cursor.execute(query, (team_name, team_id, team_name, team_id, team_name, team_id, team_name, team_id, team_name, team_id, team_name, team_id))
+    cursor.execute(query, (team_id, team_id, team_id, team_id, team_id, team_id))
 
     # Fetch the data
     data = cursor.fetchall()
@@ -399,16 +397,18 @@ def main():
     teamLst = buildTeamList()
     homeStatLst = buildStatList(True)
     awayStatLst = buildStatList(False)
+    print("good")
     createDatabase(homeStatLst, "Baseball Data.db", "HomeData")
     createDatabase(awayStatLst, "Baseball Data.db", "AwayData")
+    print("good")
     season = input("Enter a season, or type 'DONE' to continue: ")
     if (season != "DONE"):
         try:
             hDict, aDict = createDataDict(season)
             print(f"{season} DataDict Built")
             for team, teamID in teamLst:
-                populateTable("HomeData", team, hDict, "Baseball Data.db", 'HOME')
-                populateTable("AwayData", team, aDict, "Baseball Data.db", 'AWAY')
+                populateTable("HomeData", teamID, hDict, "Baseball Data.db", 'HOME')
+                populateTable("AwayData", teamID, aDict, "Baseball Data.db", 'AWAY')
                 print(f"{season} {team} rows populated")
             print(f"{season} season entered into database.")
         except:
@@ -417,6 +417,7 @@ def main():
         joinTables("Baseball Data.db", "HomeData", "AwayData", "CombinedData")
         calculateAvgRDiff("Baseball Data.db", "CombinedData")
         calculateWinPctDiff("Baseball Data.db", "CombinedData")
+        print("good")
         addSummaryRows("Baseball Data.db", "CombinedData")
         deleteDuplicates()
         exportToCSV("Baseball Data.db", "CombinedData", "calculated_columns.csv")
