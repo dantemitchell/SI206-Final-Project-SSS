@@ -1,21 +1,34 @@
 import sqlite3
 
+def copy_table(source_conn, source_table_name, dest_conn):
+    source_cursor = source_conn.cursor()
+    dest_cursor = dest_conn.cursor()
 
-def create_or_connect_database(db_name):
-    conn = sqlite3.connect(db_name)
-    return conn
+    source_cursor.execute(f"SELECT sql FROM sqlite_master WHERE type='table' AND name='{source_table_name}'")
+    create_table_query = source_cursor.fetchone()[0]
+    
+    dest_cursor.execute(create_table_query)
 
-from baseball_home_vs_away import create_table_function_1
-from NBAData import set_up_team_table
-from NBAData import set_up_record_table
-from soccer_home_vs_away import insert_data_into_combined_table
+    source_cursor.execute(f"SELECT * FROM {source_table_name}")
+    rows = source_cursor.fetchall()
+    
+    for row in rows:
+        placeholders = ', '.join('?' * len(row))
+        dest_cursor.execute(f"INSERT INTO {source_table_name} VALUES ({placeholders})", row)
 
-db_connection = create_or_connect_database('main_database.db')
+    dest_conn.commit()
 
-set_up_record_table(db_connection)
-set_up_team_table(db_connection)
-set_up_record_table(db_connection)
-insert_data_into_combined_table(db_connection)
+conn_db1 = sqlite3.connect('NBAData2.db')
+conn_db2 = sqlite3.connect('Baseball Data.db')
+conn_db3 = sqlite3.connect('football_records_combined.db')
 
+conn_main = sqlite3.connect('main_database.db')
 
-db_connection.close()
+copy_table(conn_db1, 'team_records', conn_main)
+copy_table(conn_db2, 'CombinedData', conn_main)
+copy_table(conn_db3, 'football_records', conn_main)
+
+conn_db1.close()
+conn_db2.close()
+conn_db3.close()
+conn_main.close()
