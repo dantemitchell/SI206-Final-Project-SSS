@@ -22,23 +22,8 @@ def buildStatList(home = True):
         locStr = "HOME"
     else:
         locStr = "AWAY"
-    newBoxCat = [("TeamName", "TEXT"), ("TeamID", "INTEGER"), (f"{locStr}Wins", "INTEGER"), (f"{locStr}Losses", "INTEGER"), (f"{locStr}RScored", "INTEGER"), (f"{locStr}RAllowed", "INTEGER")]
+    newBoxCat = [("TeamName", "TEXT PRIMARY KEY"), ("TeamID", "INTEGER"), ("Season", "INTEGER"), (f"{locStr}Wins", "INTEGER"), (f"{locStr}Losses", "INTEGER"), (f"{locStr}RScored", "INTEGER"), (f"{locStr}RAllowed", "INTEGER")]
     return newBoxCat
-    """for item in boxCat:
-        if type(item) == str:
-            if item.isupper():
-                newStr = f'h{item}'
-                newBoxCat.append(newStr)
-    pitchCat = list(statsapi.boxscore_data(statsapi.last_game(140))['homePitchers'][0].values())
-    newPitchCat = []
-    for item in pitchCat:
-        if type(item) == str:
-            if item.isupper():
-                newStr = f'p{item}'
-                newPitchCat.append(newStr)
-    for i in newPitchCat:
-        newBoxCat.append(i)
-    return newBoxCat"""
 
 def createDatabase(statList, dbName, tableName):
     conn = _sqlite3.connect(dbName)
@@ -99,7 +84,7 @@ def createDataDict(season):
             homeLoss = 1
             awayWin = 1
         if homeData[0] not in homeResultsDict:
-            innerDict = {'TeamID': homeData[1], 'HOMEWins' : homeWin, 'HOMELosses': homeLoss, "HOMERScored": homeData[3], 'HOMERAllowed': homeData[4]}
+            innerDict = {'TeamID': homeData[1], "Season": int(season), 'HOMEWins' : homeWin, 'HOMELosses': homeLoss, "HOMERScored": homeData[3], 'HOMERAllowed': homeData[4]}
             homeResultsDict[homeData[0]] = innerDict
         else:
             homeResultsDict[homeData[0]]['HOMEWins'] += homeWin
@@ -108,7 +93,7 @@ def createDataDict(season):
             homeResultsDict[homeData[0]]['HOMERAllowed'] += homeData[4]
 
         if awayData[0] not in awayResultsDict:
-            innerDict = {'TeamID': awayData[1], 'AWAYWins' : awayWin, 'AWAYLosses': awayLoss, "AWAYRScored": awayData[3], 'AWAYRAllowed': awayData[4]}
+            innerDict = {'TeamID': awayData[1], "Season": int(season), 'AWAYWins' : awayWin, 'AWAYLosses': awayLoss, "AWAYRScored": awayData[3], 'AWAYRAllowed': awayData[4]}
             awayResultsDict[awayData[0]] = innerDict
         else:
             awayResultsDict[awayData[0]]['AWAYWins'] += awayWin
@@ -118,31 +103,42 @@ def createDataDict(season):
     return homeResultsDict, awayResultsDict
 
 
+def populateTable(tableName, TeamName, resultsDict, dbName, location = "HOME"):
+    conn = _sqlite3.connect(dbName)
+    cursor = conn.cursor()
+    # Insert data into the table
+    insert_data_query = f'''
+    INSERT INTO {tableName} (TeamName, TeamId, Season, {location}Wins, {location}Losses, {location}RScored, {location}RAllowed)
+    VALUES (?, ?, ?, ?, ?, ?, ?);
+    '''
 
+    for team_name, team_data in resultsDict.items():
+        team_id = team_data.get("TeamID", None)
+        season = team_data.get("Season", None)
+        wins = team_data.get(f"{location}Wins", None)
+        losses = team_data.get(f"{location}Losses", None)
+        rscored = team_data.get(f"{location}RScored", None)
+        rallowed = team_data.get(f"{location}RAllowed", None)
 
-            
+        cursor.execute(insert_data_query, (team_name, team_id, season, wins, losses, rscored, rallowed))
 
-
-def populateTable():
-    divisionLst = [200,201,202,203,204,205]
-    print(statsapi.standings_data(leagueId="103,104", division="all", include_wildcard=False, season=2022, standingsTypes=None, date=None)[200]['teams'][0].keys())
-    for division in divisionLst:
-        for i in range(0,5):
-            teamDict = statsapi.standings_data(leagueId="103,104", division="all", include_wildcard=False, season=2022)[division]['teams'][i]
-            teamName = teamDict['name']
-            teamId = teamDict['team_id']
-            seasonWins = teamDict
+    conn.commit()
+    conn.close()
 
 
 
 def main():
     teamLst = buildTeamList()
-    statLst = buildStatList(True)
-    #createDatabase(statLst, "Baseball Data.db", "HomeData")
-    #createDatabase(statLst, "Baseball Data.db", "AwayData")
-    #populateTable()
-    #processBoxScore(565997)
-    createDataDict('2023')
+    homeStatLst = buildStatList(True)
+    awayStatLst = buildStatList(False)
+    createDatabase(homeStatLst, "Baseball Data.db", "HomeData")
+    createDatabase(awayStatLst, "Baseball Data.db", "AwayData")
+    seasons = ['2019', '2021', '2022', '2023']
+    for season in seasons:
+        hDict, aDict = createDataDict(season)
+        for team, teamID in teamLst:
+            populateTable("HomeData", team, hDict, "Baseball Data.db", 'HOME')
+            populateTable("AwayData", team, hDict, "Baseball Data.db", 'HOME')
 
 
 
