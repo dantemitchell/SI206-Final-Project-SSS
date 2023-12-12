@@ -16,7 +16,6 @@ set_up_record_table(db_connection)
 set_up_team_table(db_connection)
 set_up_record_table(db_connection)
 insert_data_into_combined_table(db_connection)
-# ... add more function calls if needed
 
-# Close the database connection when finished
+
 db_connection.close()
