@@ -35,9 +35,7 @@ def createDatabase(statList, dbName, tableName):
 
         # Create the new table if it doesn't exist
         columns_definition = ', '.join(f'{column} {datatype}' for column, datatype in statList)
-        print(columns_definition)
         create_table_query = f'''CREATE TABLE IF NOT EXISTS {tableName} ({columns_definition});'''
-        print(create_table_query)
         cursor.execute(create_table_query)
         conn.commit()
 
@@ -103,7 +101,6 @@ def createDataDict(season):
             awayResultsDict[awayData[0]]['AWAYLosses'] += awayLoss
             awayResultsDict[awayData[0]]['AWAYRScored'] += awayData[3]
             awayResultsDict[awayData[0]]['AWAYRAllowed'] += awayData[4]
-    print(len(homeResultsDict), len(awayResultsDict))
     return homeResultsDict, awayResultsDict
 
 
@@ -305,7 +302,7 @@ def exportToCSV(dbName, tableName, csvFileName):
     cursor = conn.cursor()
 
     # Specify the columns you want to export
-    selected_columns = ['TeamName', 'TeamID', 'Season', 'HOMEAvgRDiff', 'AWAYAvgRDiff']
+    selected_columns = ['TeamName', 'TeamID', 'Season', 'HOMEAvgRDiff', 'AWAYAvgRDiff', 'WinPctDiff']
 
     # Construct the SELECT statement with the specified columns
     select_query = f"SELECT {', '.join(selected_columns)} FROM {tableName}"
@@ -326,6 +323,12 @@ def exportToCSV(dbName, tableName, csvFileName):
 
     conn.close()
 
+def deleteDuplicates():
+    conn = sqlite3.connect("Baseball Data.db")
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM CombinedData WHERE ROWID NOT IN (SELECT MIN(ROWID) FROM CombinedData GROUP BY TeamName, TeamID, Season);")
+    conn.commit()
+    conn.close()
 
 
 def main():
@@ -346,6 +349,7 @@ def main():
     calculateAvgRDiff("Baseball Data.db", "CombinedData")
     calculateWinPctDiff("Baseball Data.db", "CombinedData")
     addSummaryRows("Baseball Data.db", "CombinedData")
+    deleteDuplicates()
     exportToCSV("Baseball Data.db", "CombinedData", "calculated_columns.csv")
     
 main()
