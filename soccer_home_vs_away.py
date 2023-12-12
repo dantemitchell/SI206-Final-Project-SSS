@@ -321,18 +321,21 @@ def create_db():
     ''')
     return conn, c
 
-
-def insert_data_into_combined_table(c, home_teams, home_results, away_teams, away_results, away_goal_diff, home_goal_diff):
+def insert_data_into_table(c, home_teams, home_results, away_teams, away_results, away_goal_diff, home_goal_diff):
+    away_teams_mapping = {team: i for i, team in enumerate(away_teams)}
     for i in range(len(home_teams)):
         team_name = home_teams[i]
         home_wins, home_draws, home_losses = home_results[i]
-        away_wins, away_draws, away_losses = away_results[i]
-        home_goal_diff_1 = home_goal_diff[i]
-        away_goal_diff_1 = away_goal_diff[i]
-        c.execute('''
-            INSERT INTO football_records (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses, away_goal_diff, home_goal_diff)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses, away_goal_diff_1, home_goal_diff_1))
+        if team_name in away_teams_mapping:
+            away_index = away_teams_mapping[team_name]
+            away_wins, away_draws, away_losses = away_results[away_index]
+            away_goal_diff_1 = away_goal_diff[away_index]
+            home_goal_diff_1 = home_goal_diff[i]
+            
+            c.execute('''
+                INSERT INTO football_records (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses, away_goal_diff, home_goal_diff)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (team_name, home_wins, home_draws, home_losses, away_wins, away_draws, away_losses, away_goal_diff_1, home_goal_diff_1))
 
 
 def main():
@@ -354,7 +357,7 @@ def main():
     url, get_records_func = urls[index]
     away_team_names, away_wins_and_losses, home_team_names, home_wins_draws_losses, away_goal_diff, home_goal_diff = get_records_func(url, bgcolor_list) 
     conn, c = create_db()
-    insert_data_into_combined_table(c, home_team_names, home_wins_draws_losses, away_team_names, away_wins_and_losses, away_goal_diff, home_goal_diff)
+    insert_data_into_table(c, home_team_names, home_wins_draws_losses, away_team_names, away_wins_and_losses, away_goal_diff, home_goal_diff)
     
     conn.commit()
     conn.close()
