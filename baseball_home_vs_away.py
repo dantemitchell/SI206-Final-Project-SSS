@@ -1,5 +1,5 @@
 import statsapi
-import _sqlite3
+import sqlite3
 import matplotlib as plt
 import seaborn as sb
 import csv
@@ -25,27 +25,27 @@ def buildStatList(home = True):
     return newBoxCat
 
 def createDatabase(statList, dbName, tableName):
-    conn = _sqlite3.connect(dbName)
+    conn = sqlite3.connect(dbName)
     cursor = conn.cursor()
-    # Check if the table already exists
-    existing_table_query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{tableName}';"
-    cursor.execute(existing_table_query)
-    existing_table = cursor.fetchone()
 
-    # If the table exists, drop it
-    if existing_table:
-        drop_table_query = f"DROP TABLE {tableName};"
-        cursor.execute(drop_table_query)
-    
-    columns_definition = ', '.join(f'{column} {datatype}' for column, datatype in statList)
-    create_table_query = f'''
-    CREATE TABLE IF NOT EXISTS {tableName} (
-        {columns_definition}
-    );
-    '''
-    cursor.execute(create_table_query)
-    conn.commit()
-    conn.close()
+    try:
+        # Clear data from the table
+        clear_data_query = f"DELETE FROM {tableName};"
+        cursor.execute(clear_data_query)
+
+        # Create the new table if it doesn't exist
+        columns_definition = ', '.join(f'{column} {datatype}' for column, datatype in statList)
+        print(columns_definition)
+        create_table_query = f'''CREATE TABLE IF NOT EXISTS {tableName} ({columns_definition});'''
+        print(create_table_query)
+        cursor.execute(create_table_query)
+        conn.commit()
+
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+
+    finally:
+        conn.close()
 
 def processBoxScore(gamePk):
     game = statsapi.game_scoring_play_data(gamePk)
@@ -103,11 +103,12 @@ def createDataDict(season):
             awayResultsDict[awayData[0]]['AWAYLosses'] += awayLoss
             awayResultsDict[awayData[0]]['AWAYRScored'] += awayData[3]
             awayResultsDict[awayData[0]]['AWAYRAllowed'] += awayData[4]
+    print(len(homeResultsDict), len(awayResultsDict))
     return homeResultsDict, awayResultsDict
 
 
 def populateTable(tableName, TeamName, resultsDict, dbName, location = "HOME"):
-    conn = _sqlite3.connect(dbName)
+    conn = sqlite3.connect(dbName)
     cursor = conn.cursor()
     # Insert data into the table
     insert_data_query = f'''
@@ -131,7 +132,7 @@ def populateTable(tableName, TeamName, resultsDict, dbName, location = "HOME"):
     conn.close()
 
 def joinTables(dbName, homeTableName, awayTableName, outputTableName):
-    conn = _sqlite3.connect(dbName)
+    conn = sqlite3.connect(dbName)
     cursor = conn.cursor()
 
     # Check if the output table already exists
@@ -151,10 +152,10 @@ def joinTables(dbName, homeTableName, awayTableName, outputTableName):
         h.TeamName AS TeamName,
         h.TeamID AS TeamID,
         h.Season AS Season,
-        h.HOMEWins AS Wins,
-        h.HOMELosses AS Losses,
-        h.HOMERScored AS RScored,
-        h.HOMERAllowed AS RAllowed,
+        h.HOMEWins AS HOMEWins,
+        h.HOMELosses AS HOMELosses,
+        h.HOMERScored AS HOMERScored,
+        h.HOMERAllowed AS HOMERAllowed,
         a.AWAYWins AS AWAYWins,
         a.AWAYLosses AS AWAYLosses,
         a.AWAYRScored AS AWAYRScored,
@@ -168,7 +169,7 @@ def joinTables(dbName, homeTableName, awayTableName, outputTableName):
     conn.close()
 
 def calculateAvgRDiff(dbName, combinedTableName):
-    conn = _sqlite3.connect(dbName)
+    conn = sqlite3.connect(dbName)
     cursor = conn.cursor()
 
     # Check if the new columns already exist
@@ -215,13 +216,44 @@ def calculateAvgRDiff(dbName, combinedTableName):
     conn.commit()
     conn.close()
 
+def calculateWinPctDiff(dbName, combinedTableName):
+    conn = sqlite3.connect(dbName)
+    cursor = conn.cursor()
+
+    # Check if the WinPctDiff column already exists
+    existing_column_query = f"PRAGMA table_info({combinedTableName});"
+    cursor.execute(existing_column_query)
+    columns_info = cursor.fetchall()
+
+    win_pct_diff_exists = any("WinPctDiff" in column_info for column_info in columns_info)
+
+    # If the WinPctDiff column already exists, drop it
+    if win_pct_diff_exists:
+        drop_column_query = f"ALTER TABLE {combinedTableName} DROP COLUMN WinPctDiff;"
+        cursor.execute(drop_column_query)
+
+    # Add the WinPctDiff column to the table
+    add_column_query = f"ALTER TABLE {combinedTableName} ADD COLUMN WinPctDiff REAL;"
+    cursor.execute(add_column_query)
+
+    # Update the WinPctDiff column with the calculated values
+    update_column_query = f'''
+    UPDATE {combinedTableName}
+    SET WinPctDiff = (HOMEWins * 1.0 / (HOMEWins + HOMELosses)) -
+                    (AWAYWins * 1.0 / (AWAYWins + AWAYLosses));
+    '''
+    cursor.execute(update_column_query)
+
+    conn.commit()
+    conn.close()
+
 def addSummaryRows(dbName, combinedTableName):
-    conn = _sqlite3.connect(dbName)
+    conn = sqlite3.connect(dbName)
     cursor = conn.cursor()
 
     # Calculate aggregate stats for each team
     team_summary_query = f'''
-    INSERT INTO {combinedTableName} (TeamName, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff)
+    INSERT INTO {combinedTableName} (TeamName, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff, WinPctDiff)
     SELECT
         TeamName,
         TeamID,
@@ -235,7 +267,8 @@ def addSummaryRows(dbName, combinedTableName):
         SUM(AWAYLosses) AS AWAYLosses,
         SUM(AWAYRScored) AS AWAYRScored,
         SUM(AWAYRAllowed) AS AWAYRAllowed,
-        AVG(AWAYAvgRDiff) AS AWAYAvgRDiff
+        AVG(AWAYAvgRDiff) AS AWAYAvgRDiff,
+        AVG(WinPctDiff) AS WinPctDiff
     FROM {combinedTableName}
     GROUP BY TeamName, TeamID;
     '''
@@ -243,7 +276,7 @@ def addSummaryRows(dbName, combinedTableName):
 
     # Calculate aggregate stats for each season
     season_summary_query = f'''
-    INSERT INTO {combinedTableName} (TeamName, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff)
+    INSERT INTO {combinedTableName} (TeamName, TeamID, Season, HOMEWins, HOMELosses, HOMERScored, HOMERAllowed, HOMEAvgRDiff, AWAYWins, AWAYLosses, AWAYRScored, AWAYRAllowed, AWAYAvgRDiff, WinPctDiff)
     SELECT
         TeamName,
         TeamID,
@@ -257,7 +290,8 @@ def addSummaryRows(dbName, combinedTableName):
         SUM(AWAYLosses) AS AWAYLosses,
         SUM(AWAYRScored) AS AWAYRScored,
         SUM(AWAYRAllowed) AS AWAYRAllowed,
-        AVG(AWAYAvgRDiff) AS AWAYAvgRDiff
+        AVG(AWAYAvgRDiff) AS AWAYAvgRDiff,
+        AVG(WinPctDiff) AS WinPctDiff
     FROM {combinedTableName}
     GROUP BY TeamName, TeamID, Season;
     '''
@@ -267,7 +301,7 @@ def addSummaryRows(dbName, combinedTableName):
     conn.close()
 
 def exportToCSV(dbName, tableName, csvFileName):
-    conn = _sqlite3.connect(dbName)
+    conn = sqlite3.connect(dbName)
     cursor = conn.cursor()
 
     # Specify the columns you want to export
@@ -296,27 +330,22 @@ def exportToCSV(dbName, tableName, csvFileName):
 
 def main():
     teamLst = buildTeamList()
-    print("Team List Built")
     homeStatLst = buildStatList(True)
-    print("Home List Built")
     awayStatLst = buildStatList(False)
-    print("Away List Built")
     createDatabase(homeStatLst, "Baseball Data.db", "HomeData")
-    print("Home Table Built")
     createDatabase(awayStatLst, "Baseball Data.db", "AwayData")
-    print("Away Table Built")
     seasons = ['2019', '2021', '2022', '2023']
     for season in seasons:
         hDict, aDict = createDataDict(season)
         print(f"{season} DataDict Built")
         for team, teamID in teamLst:
             populateTable("HomeData", team, hDict, "Baseball Data.db", 'HOME')
-            populateTable("AwayData", team, hDict, "Baseball Data.db", 'AWAY')
+            populateTable("AwayData", team, aDict, "Baseball Data.db", 'AWAY')
             print(f"{season} {team} rows populated")
-    #joinTables("Baseball Data.db", "HomeData", "AwayData", "CombinedData")
-    #calculateAvgRDiff("Baseball Data.db", "CombinedData")"""
-    #addSummaryRows("Baseball Data.db", "CombinedData")
-    #exportToCSV("Baseball Data.db", "CombinedData", "calculated_columns.csv")
-    #print(processBoxScore(567304))
-
+    joinTables("Baseball Data.db", "HomeData", "AwayData", "CombinedData")
+    calculateAvgRDiff("Baseball Data.db", "CombinedData")
+    calculateWinPctDiff("Baseball Data.db", "CombinedData")
+    addSummaryRows("Baseball Data.db", "CombinedData")
+    exportToCSV("Baseball Data.db", "CombinedData", "calculated_columns.csv")
+    
 main()
