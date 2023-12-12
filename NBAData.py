@@ -294,11 +294,46 @@ def set_up_record_table(data, cur, conn):
         cur.execute(insert_stmt, values)
     conn.commit()
 
+def calculate_averages_and_point_differential_and_write_to_file(db_path):
+    conn = sqlite3.connect(db_path)
+
+    # Calculate the averages and point differential
+    query_averages = """
+    SELECT AVG(home_wins) AS avg_home_wins,
+           AVG(home_losses) AS avg_home_losses,
+           AVG(away_wins) AS avg_away_wins,
+           AVG(away_losses) AS avg_away_losses
+    FROM team_records;
+    """
+    averages = conn.execute(query_averages).fetchone()
+
+    query_point_diff = """
+    SELECT AVG(home_points - away_points) AS avg_point_differential
+    FROM team_records;
+    """
+    avg_point_differential = conn.execute(query_point_diff).fetchone()[0]
+
+    # Writing the averages and point differential to a text file
+    file_path = 'calculations.txt'
+    with open(file_path, 'w') as file:
+        file.write(f"Average Home Wins: {averages[0]}\n")
+        file.write(f"Average Home Losses: {averages[1]}\n")
+        file.write(f"Average Away Wins: {averages[2]}\n")
+        file.write(f"Average Away Losses: {averages[3]}\n")
+        file.write(f"Average Point Differential: {avg_point_differential}\n")
+
+    return file_path
+
 def main():
     record_list = create_record_list_2019()
     cur, conn = set_up_database("NBAData2.db")
     set_up_team_table(cur, conn)
     set_up_record_table(record_list, cur, conn)
+
+    updated_output_file_path = calculate_averages_and_point_differential_and_write_to_file('NBAData2.db')
+    updated_output_file_path
+
+
 
 if __name__ == "__main__":
     main()
