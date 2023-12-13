@@ -127,6 +127,7 @@ def count_team_wins_losses_2021(data, team_id):
         finalDict = {'team_id':str(team_id)+' 21-22','Home Wins':home_wins, 'Home Losses':home_losses, 'Away Wins':away_wins, 'Away Losses':away_losses, 'Home Points':home_points, 'Away Points':away_points}
     return finalDict
 
+
 def count_team_wins_losses_2020(data, team_id):
     home_wins = 0
     home_losses = 0
